@@ -7,7 +7,14 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
 	"io/ioutil"
+	"ueransim-api/pkg/logger"
 )
+
+type ExecutorService struct{}
+
+func NewExecutorService() *ExecutorService {
+	return &ExecutorService{}
+}
 
 type ExecResult struct {
 	StdOut   string
@@ -15,7 +22,25 @@ type ExecResult struct {
 	ExitCode int
 }
 
-func Exec(ctx context.Context, containerID string, command []string) (types.IDResponse, error) {
+func (e ExecutorService) Execute(ctx context.Context, container string, cmd []string) (ExecResult, error) {
+	ex := ExecResult{}
+
+	respID, err := e.exec(ctx, container, cmd)
+	if err != nil {
+		logger.Error(err)
+		return ex, err
+	}
+
+	ex, err = e.inspectExecResp(ctx, respID.ID)
+	if err != nil {
+		logger.Error(err)
+		return ex, err
+	}
+
+	return ex, nil
+}
+
+func (e ExecutorService) exec(ctx context.Context, containerID string, command []string) (types.IDResponse, error) {
 	docker, err := client.NewEnvClient()
 	if err != nil {
 		return types.IDResponse{}, err
@@ -31,7 +56,7 @@ func Exec(ctx context.Context, containerID string, command []string) (types.IDRe
 	return docker.ContainerExecCreate(ctx, containerID, config)
 }
 
-func InspectExecResp(ctx context.Context, id string) (ExecResult, error) {
+func (e ExecutorService) inspectExecResp(ctx context.Context, id string) (ExecResult, error) {
 	var execResult ExecResult
 	docker, err := client.NewEnvClient()
 	if err != nil {

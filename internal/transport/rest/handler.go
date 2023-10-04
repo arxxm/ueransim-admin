@@ -28,11 +28,19 @@ func (h *Handler) InitRoutes() *gin.Engine {
 			response200(context, nil)
 		})
 
-		auth := api.Group("/emulator-objects")
+		baseStations := api.Group("/base-stations")
 		{
-			auth.GET("/", h.getListEmulatorObjects)
-			//auth.POST("/sign-up", h.signUp)
-			//auth.POST("/sign-in", h.signIn)
+			baseStations.GET("/", h.getBaseStationsList)
+			baseStations.GET("/status", h.getBaseStationsStatus)
+			baseStations.GET("/info", h.getBaseStationInfo)
+			baseStations.GET("/cc", h.getBaeStationsCountConnections)
+		}
+
+		mobileTerminals := api.Group("/mobile-terminals")
+		{
+			mobileTerminals.GET("/", h.getMobileTerminalsList)
+			mobileTerminals.GET("/status", h.getMobileTerminalStatus)
+			mobileTerminals.GET("/cs", h.getMobileTerminalConnectionStatus)
 		}
 
 	}

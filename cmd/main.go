@@ -24,9 +24,11 @@ func main() {
 	)
 
 	var (
-		emulatorObjectsService = service.NewEmulatorObjectsService()
+		executor              = service.NewExecutorService()
+		baseStationService    = service.NewBaseStationService(executor)
+		mobileTerminalService = service.NewMobileTerminalService(executor)
 	)
-	s := service.NewService(emulatorObjectsService)
+	s := service.NewService(baseStationService, mobileTerminalService)
 	h := rest.NewHandler(s)
 	engine := h.InitRoutes()
 
